@@ -1,30 +1,28 @@
-/* ******************************************
- * This server.js file is the primary file of the 
- * application. It is used to control the project.
- *******************************************/
-/* ***********************
- * Require Statements
- *************************/
-const express = require("express")
-const env = require("dotenv").config()
-const app = express()
-const static = require("./routes/static")
+// Week 4 Assignment Server
+// Author: Reagan Otema
 
-/* ***********************
- * Routes
- *************************/
-app.use(static)
+require("dotenv").config();
+const express = require("express");
+const path = require("path");
 
-/* ***********************
- * Local Server Information
- * Values from .env (environment) file
- *************************/
-const port = process.env.PORT
-const host = process.env.HOST
+const app = express();
 
-/* ***********************
- * Log statement to confirm server operation
- *************************/
-app.listen(port, () => {
-  console.log(`app listening on ${host}:${port}`)
-})
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Static public folder
+app.use(express.static(path.join(__dirname, "public")));
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Week 4 Assignment deployed successfully — by Reagan Otema");
+});
+
+// Render gives a PORT automatically
+const PORT = process.env.PORT || 3000;
+
+// Render REQUIREMENT: do NOT specify a host
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
