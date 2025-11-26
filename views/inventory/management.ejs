@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<section class="container">
+  <h2>Inventory Management</h2>
+  <% if (message && message.length) { %>
+    <div class="flash success"><%= message %></div>
+  <% } %>
+
+  <div class="actions">
+    <a class="btn" href="/inv/add-classification">Add Classification</a>
+    <a class="btn" href="/inv/add-inventory">Add Inventory</a>
+  </div>
+
+  <section class="class-list">
+    <h3>Classifications</h3>
+    <% if (classifications && classifications.length) { %>
+      <ul>
+        <% classifications.forEach(function(c) { %>
+          <li><strong><%= c.classification_name %></strong></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p>No classifications yet.</p>
+    <% } %>
+  </section>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,51 @@
+<%- include('../partials/header') %>
+<section class="container">
+  <h2>Add New Vehicle</h2>
+
+  <% if (errors && errors.length) { %>
+    <div class="flash error">
+      <ul>
+        <% errors.forEach(function(e){ %><li><%= e %></li><% }) %>
+      </ul>
+    </div>
+  <% } %>
+
+  <form action="/inv/add-inventory" method="post" novalidate>
+    <fieldset>
+      <label for="classificationList">Classification</label>
+      <div><%- classificationList %></div>
+
+      <label for="inv_make">Make</label>
+      <input id="inv_make" name="inv_make" required value="<%= sticky && sticky.inv_make ? sticky.inv_make : '' %>">
+
+      <label for="inv_model">Model</label>
+      <input id="inv_model" name="inv_model" required value="<%= sticky && sticky.inv_model ? sticky.inv_model : '' %>">
+
+      <label for="inv_year">Year</label>
+      <input id="inv_year" name="inv_year" required pattern="\d{4}" value="<%= sticky && sticky.inv_year ? sticky.inv_year : '' %>">
+
+      <label for="inv_price">Price</label>
+      <input id="inv_price" name="inv_price" required value="<%= sticky && sticky.inv_price ? sticky.inv_price : '' %>">
+
+      <label for="inv_miles">Miles</label>
+      <input id="inv_miles" name="inv_miles" required value="<%= sticky && sticky.inv_miles ? sticky.inv_miles : '' %>">
+
+      <label for="inv_color">Color</label>
+      <input id="inv_color" name="inv_color" value="<%= sticky && sticky.inv_color ? sticky.inv_color : '' %>">
+
+      <label for="inv_image">Image Path</label>
+      <input id="inv_image" name="inv_image" value="<%= sticky && sticky.inv_image ? sticky.inv_image : '/images/no-image.png' %>">
+
+      <label for="inv_thumbnail">Thumbnail Path</label>
+      <input id="inv_thumbnail" name="inv_thumbnail" value="<%= sticky && sticky.inv_thumbnail ? sticky.inv_thumbnail : '/images/no-image-thumb.png' %>">
+
+      <label for="inv_description">Description</label>
+      <textarea id="inv_description" name="inv_description"><%= sticky && sticky.inv_description ? sticky.inv_description : '' %></textarea>
+    </fieldset>
+
+    <button type="submit">Add Vehicle</button>
+  </form>
+
+  <p><a href="/inv/">Return to Management</a></p>
+</section>
+<%- include('../partials/footer') %>
