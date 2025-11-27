@@ -1,11 +1,11 @@
 // Author: Reagan Otema
 const express = require('express');
 const router = express.Router();
-const inventoryController = require('../controllers/inventoryController');
+const inventoryController = require('../controllers/inventorycontroller');
 const { classificationValidator, vehicleValidator } = require('../middleware/validation');
 
 // Management View
-router.get('/', inventoryController.getManagement);
+router.get('/', inventorycontroller.getManagement);
 
 // Add Classification Form (GET)
 router.get('/add-classification', (req, res) => {
