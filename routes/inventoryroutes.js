@@ -7,19 +7,19 @@ const { classificationValidator, vehicleValidator } = require('../middleware/val
 // Management View
 router.get('/', inventoryController.getManagement);
 
-// Add Classification Form (GET)
+// Add Classification Form
 router.get('/add-classification', (req, res) => {
     res.render('inventory/add-classification', { errors: null, classification_name: '' });
 });
 
-// Add Classification Submission (POST)
+// Add Classification Submission
 router.post(
     '/add-classification',
     classificationValidator,
     inventoryController.addClassification
 );
 
-// Add Vehicle Form (GET)
+// Add Vehicle Form
 router.get('/add-inventory', async (req, res) => {
     const classificationList = await require('../utils').buildClassificationList();
     res.render('inventory/add-inventory', {
@@ -36,7 +36,7 @@ router.get('/add-inventory', async (req, res) => {
     });
 });
 
-// Add Vehicle Submission (POST)
+// Add Vehicle Submission
 router.post(
     '/add-inventory',
     vehicleValidator,
