@@ -1,28 +1,13 @@
-/**
- * Author: Reagan Otema
- * Wrap vehicle data in HTML for the detail page
- * Ensures image names are always safe and correctly loaded.
- */
+// Author: Reagan Otema
+const invModel = require('../models/inventoryModel');
 
-function buildVehicleHTML(vehicle) {
-  let imageFile = "default-vehicle.jpg";
-
-  if (vehicle.image) {
-    imageFile = vehicle.image.trim().toLowerCase();
-  }
-
-  return `
-    <h1>${vehicle.make} ${vehicle.model}</h1>
-    <div class="vehicle-detail">
-      <img src="/images/vehicles/${imageFile}" alt="${vehicle.make} ${vehicle.model}" class="vehicle-image animate-fade">
-      <div class="vehicle-info animate-fade">
-        <p><strong>Year:</strong> ${vehicle.year}</p>
-        <p><strong>Price:</strong> $${Number(vehicle.price).toLocaleString()}</p>
-        <p><strong>Mileage:</strong> ${Number(vehicle.mileage).toLocaleString()} miles</p>
-        <p>${vehicle.description}</p>
-      </div>
-    </div>
-  `;
-}
-
-module.exports = { buildVehicleHTML };
+exports.buildClassificationList = async function (classification_id = null) {
+    let data = await invModel.getClassifications();
+    let classificationList = '<select name="classification_id" id="classificationList" required>';
+    classificationList += "<option value=''>Choose a Classification</option>";
+    data.rows.forEach(row => {
+        classificationList += `<option value='${row.classification_id}'${classification_id == row.classification_id ? ' selected' : ''}>${row.classification_name}</option>`;
+    });
+    classificationList += '</select>';
+    return classificationList;
+};

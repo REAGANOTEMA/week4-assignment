@@ -1,27 +1,41 @@
+/* Author: Reagan Otema */
 body {
   font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  margin: 0;
+  margin: 20px;
   padding: 0;
+  background: #f4f4f4;
 }
 
-header, footer {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 1em;
+header h1 {
+  color: #333;
 }
 
-nav a {
-  color: #fff;
-  margin: 0 1em;
-  text-decoration: none;
+.flash-message {
+  padding: 10px;
+  background-color: #e0ffe0;
+  border: 1px solid #00cc00;
+  margin-bottom: 15px;
 }
 
-nav a:hover {
-  text-decoration: underline;
+.errors {
+  color: red;
+  list-style-type: none;
 }
 
-main {
-  padding: 2em;
+form label {
+  display: block;
+  margin-top: 10px;
+}
+
+form input,
+form textarea,
+form select {
+  width: 300px;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+form button {
+  margin-top: 15px;
+  padding: 10px 15px;
 }

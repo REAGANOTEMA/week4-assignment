@@ -1,56 +1,44 @@
-/**
- * Author: Reagan Otema
- * Vehicle Detail Page - MVC App (Render-ready)
- */
-
-require('dotenv').config();
+// Author: Reagan Otema
 const express = require('express');
-const app = express();
-const { Pool } = require('pg');
+const session = require('express-session');
 const path = require('path');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+require('dotenv').config();
 
-// Correct lowercase path to match your actual file
-const inventoryRoutes = require('./routes/inventoryroutes');
+const app = express();
 
-// Setup PostgreSQL pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
-
-// Make database pool available to controllers
-app.locals.db = pool;
-
-// Set view engine and views directory
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Serve static files from /public
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Session
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'secret-key',
+    resave: false,
+    saveUninitialized: true
+}));
+
+// View Engine
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 // Routes
-app.use('/inventory', inventoryRoutes);
-app.get('/', (req, res) => {
-  res.redirect('/inventory');
-});
+app.use('/inv', inventoryRoutes);
 
-// 404 handler
+// 404 Handler
 app.use((req, res) => {
-  res.status(404).render('error', { 
-    message: 'Page not found', 
-    status: 404 
-  });
+    res.status(404).send('Page Not Found');
 });
 
-// 500 error handler
+// Error Handler
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).render('error', { 
-    message: err.message, 
-    status: 500 
-  });
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
 });
 
-// Start server
+// Start Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

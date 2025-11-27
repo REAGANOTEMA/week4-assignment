@@ -1,21 +1,46 @@
-/**
- * Author: Reagan Otema
- * Inventory routes
- */
-
+// Author: Reagan Otema
 const express = require('express');
 const router = express.Router();
+const inventoryController = require('../controllers/inventoryController');
+const { classificationValidator, vehicleValidator } = require('../middleware/validation');
 
-// Controller
-const inventoryController = require('../controllers/inventorycontroller');
+// Management View
+router.get('/', inventoryController.getManagement);
 
-// List all vehicles
-router.get('/', inventoryController.inventoryList);
+// Add Classification Form (GET)
+router.get('/add-classification', (req, res) => {
+    res.render('inventory/add-classification', { errors: null, classification_name: '' });
+});
 
-// Vehicle detail route
-router.get('/vehicle/:id', inventoryController.vehicleDetail);
+// Add Classification Submission (POST)
+router.post(
+    '/add-classification',
+    classificationValidator,
+    inventoryController.addClassification
+);
 
-// Trigger 500 error route
-router.get('/trigger-error', inventoryController.triggerError);
+// Add Vehicle Form (GET)
+router.get('/add-inventory', async (req, res) => {
+    const classificationList = await require('../utils').buildClassificationList();
+    res.render('inventory/add-inventory', {
+        errors: null,
+        classificationList,
+        inv_make: '',
+        inv_model: '',
+        inv_description: '',
+        inv_image: '/images/no-image.png',
+        inv_thumbnail: '/images/no-image-tn.png',
+        inv_price: '',
+        inv_stock: '',
+        inv_color: ''
+    });
+});
+
+// Add Vehicle Submission (POST)
+router.post(
+    '/add-inventory',
+    vehicleValidator,
+    inventoryController.addVehicle
+);
 
 module.exports = router;

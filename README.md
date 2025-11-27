@@ -1,45 +1,23 @@
-# Reagan Otema — CSE 340 Assignment 4
-
-**Adding New Classifications and Vehicles**
+# CSE 340 Assignment 4 - Inventory Management
 
 **Author:** Reagan Otema
 
 ## Overview
 
-This project provides an Express/EJS MVC sample that implements:
+This project implements a simple inventory management system for adding new classifications and vehicles. It demonstrates **MVC architecture**, **client and server validation**, **sticky forms**, and proper **database insertion** using prepared statements. Fully deployed on **Render**.
 
-- Management view (`/inv/`)
-- Add Classification (client+server validation)
-- Add Inventory/Vehicle (client+server validation, sticky form)
-- Flash messages, utilities, and parameterized DB inserts (Postgres)
+---
 
-## Setup
+## Features
 
-1. Copy `.env.sample` to `.env` and set `DATABASE_URL` and `SESSION_SECRET`.
-2. `npm install`
-3. Run locally: `npm run dev` or `npm start`
+- **Management View**: Links to add new classifications or vehicles.
+- **Add Classification**: Add a new classification with validation (no spaces or special characters).
+- **Add Vehicle**: Add new vehicles with sticky form fields, classification selection, and validation.
+- **Client & Server Validation**: Ensures correct input.
+- **Session Messages**: Displays success or error messages.
+- **MVC Architecture**: Clear separation between routes, controllers, models, and views.
+- **Prepared Statements**: Safe database operations with PostgreSQL.
 
-## Database
+---
 
-Create the required tables (example):
-
-```sql
-CREATE TABLE classifications (
-  classification_id SERIAL PRIMARY KEY,
-  classification_name VARCHAR(50) UNIQUE NOT NULL
-);
-
-CREATE TABLE inventory (
-  inv_id SERIAL PRIMARY KEY,
-  classification_id INTEGER NOT NULL REFERENCES classifications(classification_id),
-  inv_make VARCHAR(50) NOT NULL,
-  inv_model VARCHAR(50) NOT NULL,
-  inv_year INTEGER NOT NULL,
-  inv_description TEXT,
-  inv_image VARCHAR(255),
-  inv_thumbnail VARCHAR(255),
-  inv_price NUMERIC(12,2) NOT NULL,
-  inv_miles INTEGER NOT NULL,
-  inv_color VARCHAR(30)
-);
-```
+## Folder Structure
