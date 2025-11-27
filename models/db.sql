@@ -3,24 +3,30 @@
 Author:
 Reagan Otema
 
-const { Pool } = require
-('pg');
+CREATE TABLE
+IF NOT EXISTS classification
+(
+  classification_id SERIAL PRIMARY KEY,
+  classification_name VARCHAR
+(100) NOT NULL UNIQUE
+);
 
-//
-Use DATABASE_URL
-from environment
-(Render) or fallback to local database
-const connectionString = process.env.DATABASE_URL || 'postgresql://localhost/reagan_assignment';
-
-//
-Create a new pool
-const pool = new Pool
-({ connectionString });
-
-// Export query function and pool
-module.exports = {
-query:
-(text, params) => pool.query
-(text, params),
-  pool
-};
+CREATE TABLE
+IF NOT EXISTS inventory
+(
+  inv_id SERIAL PRIMARY KEY,
+  inv_make VARCHAR
+(100) NOT NULL,
+  inv_model VARCHAR
+(100) NOT NULL,
+  inv_description TEXT,
+  inv_image TEXT,
+  inv_thumbnail TEXT,
+  inv_price NUMERIC
+(12,2),
+  inv_miles INTEGER,
+  inv_color VARCHAR
+(50),
+  classification_id INTEGER REFERENCES classification
+(classification_id)
+);

@@ -1,19 +1,17 @@
 // Inventory routes
 // Author: Reagan Otema
+// routes/invRoute.js
 const express = require('express');
-const router = express.Router();
-const invController = require('../controllers/inventorycontroller');
-const validators = require('../middleware/validators');
+const router = new express.Router();
+const invController = require('../controllers/invController');
 
-// Management view (access via /inv/)
-router.get('/', invController.buildManagement);
+// Inventory / classification routes
+router.get('/', invController.buildInventory);
+router.get('/add-classification', invController.addClassificationView);
+router.post('/add-classification', invController.processAddClassification);
 
-// Add classification
-router.get('/add-classification', invController.buildAddClassification);
-router.post('/add-classification', validators.validateClassification, invController.handleAddClassification);
+router.get('/add-vehicle', invController.addVehicleView);
+router.post('/add-vehicle', invController.processAddVehicle);
 
-// Add inventory
-router.get('/add-inventory', invController.buildAddInventory);
-router.post('/add-inventory', validators.validateInventory, invController.handleAddInventory);
-
+// other inv routes should already exist (e.g., /inv/:id)
 module.exports = router;

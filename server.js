@@ -1,28 +1,17 @@
 // Week 4 Assignment Server
 // Author: Reagan Otema
 
-require("dotenv").config();
-const express = require("express");
-const path = require("path");
-
+const express = require('express');
 const app = express();
+const invRoute = require('./routes/invRoute');
+// other requires...
 
-// Middleware
-app.use(express.json());
+// middleware
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+// session, flash, static, view engine, etc.
 
-// Static public folder
-app.use(express.static(path.join(__dirname, "public")));
+// use routes
+app.use('/inv', invRoute);
 
-// Test route
-app.get("/", (req, res) => {
-  res.send("Week 4 Assignment deployed successfully — by Reagan Otema");
-});
-
-// Render gives a PORT automatically
-const PORT = process.env.PORT || 3000;
-
-// Render REQUIREMENT: do NOT specify a host
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// you may have other routes e.g. app.use('/', indexRoute);

@@ -1,78 +1,118 @@
-// Inventory controller
-// Author: Reagan Otema
-const invModel = require('../models/inventory-model');
-const util = require('../utilities');
-
-async function buildManagement(req, res, next) {
+/**
+ * Author: Reagan Otema
+ * Controller for vehicle pages and error handling
+ */
+// controllers/invController.js
+const classificationModel = require('../models/classificationModel');
+const inventoryModel = require('../models/inventoryModel');
+const utilities = require('../utilities/utilities'); // adapt if you use different utilities
+// render the inventory home / list (existing function)
+async function buildInventory(req, res, next) {
   try {
-    // build classification list to show in management immediately after adds
-    const classifications = await invModel.getClassifications();
-    res.render('inventory/management', { classifications: classifications.rows, message: req.flash('message') });
+    const classifications = await classificationModel.getClassifications();
+    // existing code likely builds nav and renders - adapt if necessary
+    res.render('inventory/list', { classifications });
   } catch (err) {
     next(err);
   }
 }
 
-function buildAddClassification(req, res, next) {
-  try {
-    res.render('inventory/add-classification', { errors: req.flash('errors') || [], classification_name: '' });
-  } catch (err) {
-    next(err);
-  }
+// Add classification GET view
+function addClassificationView(req, res) {
+  res.render('inventory/add-classification', {
+    title: 'Add Classification',
+    errors: null,
+    data: {}
+  });
 }
 
-async function handleAddClassification(req, res, next) {
+// Add classification POST handler
+async function processAddClassification(req, res, next) {
   try {
-    const classification_name = req.body.classification_name.trim();
-    const result = await invModel.insertClassification(classification_name);
-    if (result && result.rows && result.rows[0]) {
-      req.flash('message', `Classification "${classification_name}" added successfully.`);
-      return res.redirect('/inv/');
+    const { classification_name } = req.body;
+    // basic server-side validation
+    if (!classification_name || classification_name.trim().length < 2) {
+      return res.render('inventory/add-classification', {
+        title: 'Add Classification',
+        errors: ['Classification name must be at least 2 characters.'],
+        data: { classification_name }
+      });
+    }
+
+    const result = await classificationModel.addClassification(classification_name.trim());
+    if (result.rowCount && result.rowCount > 0) {
+      // success - redirect to inventory root or show success message
+      req.flash('success', `Classification "${classification_name}" added.`);
+      return res.redirect('/inv'); // nav should refresh to show new classification
     } else {
-      req.flash('errors', ['Failed to add classification.']);
-      return res.render('inventory/add-classification', { errors: req.flash('errors'), classification_name });
+      return res.render('inventory/add-classification', {
+        title: 'Add Classification',
+        errors: ['Failed to add classification. Try again.'],
+        data: { classification_name }
+      });
     }
   } catch (err) {
-    // handle unique constraint
-    if (err.code === '23505') {
-      req.flash('errors', ['Classification already exists.']);
-      return res.render('inventory/add-classification', { errors: req.flash('errors'), classification_name: req.body.classification_name });
-    }
     next(err);
   }
 }
 
-async function buildAddInventory(req, res, next) {
+// Add vehicle GET view
+async function addVehicleView(req, res, next) {
   try {
-    const classificationList = await util.buildClassificationList();
-    res.render('inventory/add-inventory', { errors: req.flash('errors') || [], sticky: {}, classificationList });
+    const classifications = await classificationModel.getClassifications();
+    res.render('inventory/add-vehicle', {
+      title: 'Add Vehicle',
+      classifications,
+      errors: null,
+      data: {}
+    });
   } catch (err) {
     next(err);
   }
 }
 
-async function handleAddInventory(req, res, next) {
+// Add vehicle POST handler
+async function processAddVehicle(req, res, next) {
   try {
-    const data = {
-      classification_id: req.body.classification_id,
-      inv_make: req.body.inv_make.trim(),
-      inv_model: req.body.inv_model.trim(),
-      inv_year: Number(req.body.inv_year),
-      inv_description: req.body.inv_description || '',
-      inv_image: req.body.inv_image || '/images/no-image.png',
-      inv_thumbnail: req.body.inv_thumbnail || '/images/no-image-thumb.png',
-      inv_price: Number(req.body.inv_price),
-      inv_miles: Number(req.body.inv_miles),
-      inv_color: req.body.inv_color || ''
-    };
-    const result = await invModel.insertInventory(data);
-    if (result && result.rows && result.rows[0]) {
-      req.flash('message', `Vehicle added successfully (ID: ${result.rows[0].inv_id}).`);
-      return res.redirect('/inv/');
+    const {
+      inv_make, inv_model, inv_description,
+      inv_image, inv_thumbnail, inv_price,
+      inv_miles, inv_color, classification_id
+    } = req.body;
+
+    // basic validation
+    const errors = [];
+    if (!inv_make || !inv_model) errors.push('Make and model are required.');
+    if (!classification_id) errors.push('Classification must be selected.');
+    if (!inv_price || isNaN(Number(inv_price))) errors.push('Price is required and must be a number.');
+
+    if (errors.length > 0) {
+      const classifications = await classificationModel.getClassifications();
+      return res.render('inventory/add-vehicle', {
+        title: 'Add Vehicle',
+        classifications,
+        errors,
+        data: req.body
+      });
+    }
+
+    const result = await inventoryModel.addVehicle({
+      inv_make, inv_model, inv_description,
+      inv_image, inv_thumbnail, inv_price,
+      inv_miles, inv_color, classification_id
+    });
+
+    if (result.rowCount && result.rowCount > 0) {
+      req.flash('success', `Vehicle ${inv_make} ${inv_model} added.`);
+      return res.redirect('/inv');
     } else {
-      req.flash('errors', ['Failed to add vehicle.']);
-      const classificationList = await util.buildClassificationList(req.body.classification_id);
-      return res.render('inventory/add-inventory', { errors: req.flash('errors'), sticky: req.body, classificationList });
+      const classifications = await classificationModel.getClassifications();
+      return res.render('inventory/add-vehicle', {
+        title: 'Add Vehicle',
+        classifications,
+        errors: ['Failed to add vehicle. Try again.'],
+        data: req.body
+      });
     }
   } catch (err) {
     next(err);
@@ -80,9 +120,10 @@ async function handleAddInventory(req, res, next) {
 }
 
 module.exports = {
-  buildManagement,
-  buildAddClassification,
-  handleAddClassification,
-  buildAddInventory,
-  handleAddInventory
+  buildInventory,
+  addClassificationView,
+  processAddClassification,
+  addVehicleView,
+  processAddVehicle,
+  // export other existing functions if present
 };
