@@ -28,8 +28,8 @@ router.get('/add-inventory', async (req, res) => {
         inv_make: '',
         inv_model: '',
         inv_description: '',
-        inv_image: '/images/no-image.png',
-        inv_thumbnail: '/images/no-image-tn.png',
+        inv_image: '/images/no-image.webp',
+        inv_thumbnail: '/images/no-image-tn.webp',
         inv_price: '',
         inv_stock: '',
         inv_color: ''
