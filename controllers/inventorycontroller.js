@@ -1,58 +1,219 @@
 // Author: Reagan Otema
-const invModel = require('../models/inventoryModel');
-const { validationResult } = require('express-validator');
-const util = require('../utils');
+const invModel = require("../models/inventoryModel")
+const { validationResult } = require("express-validator")
+const utilities = require("../utils/index")
 
-exports.getManagement = (req, res) => {
-    const message = req.session.message;
-    req.session.message = null;
-    res.render('inventory/management', { message });
-};
+/* ****************************************
+*  Deliver Inventory Management View
+* *************************************** */
+exports.buildManagement = async function (req, res) {
+  const nav = await utilities.getNav()
+  const message = req.flash("notice")
+  res.render("inventory/management", {
+    title: "Inventory Management",
+    nav,
+    errors: null,
+    message,
+  })
+}
 
-exports.addClassification = async (req, res) => {
-    const errors = validationResult(req);
-    const { classification_name } = req.body;
+/* ****************************************
+*  Deliver Add Classification View
+* *************************************** */
+exports.buildAddClassification = async function (req, res) {
+  const nav = await utilities.getNav()
+  const message = req.flash("notice")
 
-    if (!errors.isEmpty()) {
-        return res.render('inventory/add-classification', { errors: errors.array(), classification_name });
+  res.render("inventory/add-classification", {
+    title: "Add New Classification",
+    nav,
+    message,
+    errors: null,
+    classification_name: "",
+  })
+}
+
+/* ****************************************
+*  Process Add Classification
+* *************************************** */
+exports.addClassification = async function (req, res) {
+  const errors = validationResult(req)
+  let { classification_name } = req.body
+  const nav = await utilities.getNav()
+
+  // Validation failed
+  if (!errors.isEmpty()) {
+    return res.status(400).render("inventory/add-classification", {
+      title: "Add New Classification",
+      nav,
+      errors: errors.array(),
+      message: null,
+      classification_name, // sticky
+    })
+  }
+
+  try {
+    const result = await invModel.insertClassification(classification_name)
+
+    if (result.rowCount > 0) {
+      req.flash("notice", `The classification "${classification_name}" was successfully added.`)
+
+      // Rebuild nav so the new classification appears immediately
+      return res.redirect("/inv/")
     }
 
-    try {
-        const result = await invModel.insertClassification(classification_name);
-        if (result.rowCount > 0) {
-            req.session.message = `Classification "${classification_name}" added successfully!`;
-            return res.redirect('/inv/');
-        } else {
-            return res.render('inventory/add-classification', { errors: [{ msg: 'Failed to add classification.' }], classification_name });
-        }
-    } catch (err) {
-        return res.render('inventory/add-classification', { errors: [{ msg: err.message }], classification_name });
-    }
-};
+    // Insert failed
+    return res.status(500).render("inventory/add-classification", {
+      title: "Add New Classification",
+      nav,
+      errors: [{ msg: "Failed to add classification." }],
+      message: null,
+      classification_name,
+    })
+  } catch (error) {
+    return res.status(500).render("inventory/add-classification", {
+      title: "Add New Classification",
+      nav,
+      errors: [{ msg: error.message }],
+      message: null,
+      classification_name,
+    })
+  }
+}
 
-exports.addVehicle = async (req, res) => {
-    const errors = validationResult(req);
-    const {
-        classification_id, inv_make, inv_model, inv_description,
-        inv_image, inv_thumbnail, inv_price, inv_stock, inv_color
-    } = req.body;
+/* ****************************************
+*  Deliver Add Inventory View
+* *************************************** */
+exports.buildAddInventory = async function (req, res) {
+  const nav = await utilities.getNav()
+  const classificationList = await utilities.buildClassificationList()
+  const message = req.flash("notice")
 
-    if (!errors.isEmpty()) {
-        const classificationList = await util.buildClassificationList(classification_id);
-        return res.render('inventory/add-inventory', { errors: errors.array(), classificationList, ...req.body });
+  res.render("inventory/add-inventory", {
+    title: "Add New Vehicle",
+    nav,
+    classificationList,
+    errors: null,
+    message,
+
+    // Sticky defaults
+    classification_id: "",
+    inv_make: "",
+    inv_model: "",
+    inv_year: "",
+    inv_description: "",
+    inv_image: "/images/vehicles/no-image.png",
+    inv_thumbnail: "/images/vehicles/no-image-tn.png",
+    inv_price: "",
+    inv_stock: "",
+    inv_color: "",
+  })
+}
+
+/* ****************************************
+*  Process Add Vehicle
+* *************************************** */
+exports.addInventory = async function (req, res) {
+  const errors = validationResult(req)
+  const nav = await utilities.getNav()
+
+  let {
+    classification_id,
+    inv_make,
+    inv_model,
+    inv_year,
+    inv_description,
+    inv_image,
+    inv_thumbnail,
+    inv_price,
+    inv_stock,
+    inv_color,
+  } = req.body
+
+  // Return classification dropdown with sticky selection
+  const classificationList = await utilities.buildClassificationList(classification_id)
+
+  // Validation failed
+  if (!errors.isEmpty()) {
+    return res.status(400).render("inventory/add-inventory", {
+      title: "Add New Vehicle",
+      nav,
+      classificationList,
+      errors: errors.array(),
+      message: null,
+
+      // Sticky form
+      classification_id,
+      inv_make,
+      inv_model,
+      inv_year,
+      inv_description,
+      inv_image,
+      inv_thumbnail,
+      inv_price,
+      inv_stock,
+      inv_color,
+    })
+  }
+
+  try {
+    const result = await invModel.insertVehicle({
+      classification_id,
+      inv_make,
+      inv_model,
+      inv_year,
+      inv_description,
+      inv_image,
+      inv_thumbnail,
+      inv_price,
+      inv_stock,
+      inv_color,
+    })
+
+    if (result.rowCount > 0) {
+      req.flash("notice", `The vehicle "${inv_make} ${inv_model}" was successfully added.`)
+      return res.redirect("/inv/")
     }
 
-    try {
-        const result = await invModel.insertVehicle(req.body);
-        if (result.rowCount > 0) {
-            req.session.message = `Vehicle "${inv_make} ${inv_model}" added successfully!`;
-            return res.redirect('/inv/');
-        } else {
-            const classificationList = await util.buildClassificationList(classification_id);
-            return res.render('inventory/add-inventory', { errors: [{ msg: 'Failed to add vehicle.' }], classificationList, ...req.body });
-        }
-    } catch (err) {
-        const classificationList = await util.buildClassificationList(classification_id);
-        return res.render('inventory/add-inventory', { errors: [{ msg: err.message }], classificationList, ...req.body });
-    }
-};
+    // Failed to insert
+    return res.status(500).render("inventory/add-inventory", {
+      title: "Add New Vehicle",
+      nav,
+      classificationList,
+      errors: [{ msg: "Failed to add vehicle." }],
+      message: null,
+
+      // Sticky
+      classification_id,
+      inv_make,
+      inv_model,
+      inv_year,
+      inv_description,
+      inv_image,
+      inv_thumbnail,
+      inv_price,
+      inv_stock,
+      inv_color,
+    })
+  } catch (error) {
+    return res.status(500).render("inventory/add-inventory", {
+      title: "Add New Vehicle",
+      nav,
+      classificationList,
+      errors: [{ msg: error.message }],
+      message: null,
+
+      // Sticky
+      classification_id,
+      inv_make,
+      inv_model,
+      inv_year,
+      inv_description,
+      inv_image,
+      inv_thumbnail,
+      inv_price,
+      inv_stock,
+      inv_color,
+    })
+  }
+}
