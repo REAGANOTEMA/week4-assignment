@@ -65,7 +65,7 @@ router.get("/add-inventory", async (req, res) => {
 router.post(
   "/add-inventory",
   vehicleValidator,
-  inventoryController.addVehicle // must exactly match controller
+  inventoryController.addVehicle // MUST match your controller function exactly
 );
 
 module.exports = router;

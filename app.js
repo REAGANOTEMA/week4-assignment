@@ -20,7 +20,7 @@ app.use(
     secret: process.env.SESSION_SECRET || 'secret-key',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // set true if using HTTPS
+    cookie: { secure: false }, // Set to true if using HTTPS in production
   })
 );
 
@@ -54,3 +54,5 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app;
