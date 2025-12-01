@@ -8,20 +8,23 @@ const { classificationValidator, vehicleValidator } = require("../middleware/val
 const utilities = require("../utils/index");
 
 /* ****************************************
-* Management View
-**************************************** */
+ * Management View
+ **************************************** */
 router.get("/", inventoryController.getManagement);
 
 /* ****************************************
-* Add Classification Form
-**************************************** */
+ * Add Classification Form
+ **************************************** */
 router.get("/add-classification", (req, res) => {
-  res.render("inventory/add-classification", { errors: null, classification_name: "" });
+  res.render("inventory/add-classification", {
+    errors: null,
+    classification_name: ""
+  });
 });
 
 /* ****************************************
-* Add Classification Submission
-**************************************** */
+ * Add Classification Submission
+ **************************************** */
 router.post(
   "/add-classification",
   classificationValidator,
@@ -29,8 +32,8 @@ router.post(
 );
 
 /* ****************************************
-* Add Vehicle Form
-**************************************** */
+ * Add Vehicle Form
+ **************************************** */
 router.get("/add-inventory", async (req, res) => {
   try {
     const classificationList = await utilities.buildClassificationList();
@@ -57,12 +60,12 @@ router.get("/add-inventory", async (req, res) => {
 });
 
 /* ****************************************
-* Add Vehicle Submission
-**************************************** */
+ * Add Vehicle Submission
+ **************************************** */
 router.post(
   "/add-inventory",
   vehicleValidator,
-  inventoryController.addVehicle // must match your controller function name
+  inventoryController.addVehicle // must exactly match controller
 );
 
 module.exports = router;
