@@ -1,4 +1,8 @@
 // Author: Reagan Otema
+/*
+  Final working server for CSE 340 Week 4 assignment
+*/
+
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -16,6 +20,7 @@ app.use(
     secret: process.env.SESSION_SECRET || 'secret-key',
     resave: false,
     saveUninitialized: true,
+    cookie: { secure: false } // set true if using HTTPS
   })
 );
 
@@ -31,7 +36,9 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 app.use('/inv', inventoryRoutes);
 
 // Root route
-app.get('/', (req, res) => res.send('Server running - Reagan Otema'));
+app.get('/', (req, res) => {
+  res.send('Reagan Otema — CSE 340 Assignment Server Running');
+});
 
 // 404 handler
 app.use((req, res) => {

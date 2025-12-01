@@ -1,8 +1,15 @@
-// Postgres database pool
-//
-Author:
-Reagan Otema
+-- Author: Reagan Otema
+-- PostgreSQL database schema for CSE 340
 
+-- ============================
+-- DROP TABLES IF THEY EXIST
+-- ============================
+DROP TABLE IF EXISTS inventory;
+DROP TABLE IF EXISTS classification;
+
+-- ============================
+-- CREATE CLASSIFICATION TABLE
+-- ============================
 CREATE TABLE
 IF NOT EXISTS classification
 (
@@ -11,6 +18,9 @@ IF NOT EXISTS classification
 (100) NOT NULL UNIQUE
 );
 
+-- ============================
+-- CREATE INVENTORY TABLE
+-- ============================
 CREATE TABLE
 IF NOT EXISTS inventory
 (
@@ -19,14 +29,14 @@ IF NOT EXISTS inventory
 (100) NOT NULL,
   inv_model VARCHAR
 (100) NOT NULL,
-  inv_description TEXT,
-  inv_image TEXT,
-  inv_thumbnail TEXT,
+  inv_description TEXT NOT NULL,
+  inv_image TEXT NOT NULL,
+  inv_thumbnail TEXT NOT NULL,
   inv_price NUMERIC
-(12,2),
-  inv_miles INTEGER,
+(12,2) NOT NULL,
+  inv_miles INTEGER NOT NULL,
   inv_color VARCHAR
-(50),
-  classification_id INTEGER REFERENCES classification
+(50) NOT NULL,
+  classification_id INTEGER NOT NULL REFERENCES classification
 (classification_id)
 );
