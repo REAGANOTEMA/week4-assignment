@@ -1,7 +1,7 @@
 // Author: Reagan Otema
 // Utility functions for CSE 340 Assignment 4
 
-const invModel = require("../models/inventoryModel")
+const invModel = require("../models/inventorymodel")
 
 /**
  * Build a dynamic classification dropdown list
