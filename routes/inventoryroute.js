@@ -4,9 +4,8 @@
 const express = require("express");
 const router = express.Router();
 
-// MUST MATCH LOWERCASE FILE NAME EXACTLY (Render is case-sensitive!)
-const inventoryController = require("../controllers/inventorycontroller");
-
+// Make sure your file names are all lowercase!
+const inventoryController = require("../controllers/inventorycontroller"); // inventorycontroller.js
 const { classificationValidator, vehicleValidator } = require("../middleware/validation");
 const utilities = require("../utils/index");
 
@@ -70,5 +69,12 @@ router.post(
   vehicleValidator,
   inventoryController.addInventory
 );
+
+/* ****************************************
+ * Final safety check for undefined functions
+ **************************************** */
+if (!inventoryController.buildManagement) throw new Error("buildManagement function is missing in inventoryController!");
+if (!inventoryController.addClassification) throw new Error("addClassification function is missing in inventoryController!");
+if (!inventoryController.addInventory) throw new Error("addInventory function is missing in inventoryController!");
 
 module.exports = router;
