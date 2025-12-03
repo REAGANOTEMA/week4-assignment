@@ -1,12 +1,14 @@
+// controllers/inventorycontroller.js
 // Author: Reagan Otema
-const invModel = require("../models/inventoryModel")
+
+const invModel = require("../models/inventorymodel") // match your lowercase filename
 const { validationResult } = require("express-validator")
 const utilities = require("../utils/index")
 
 /* ****************************************
 *  Deliver Inventory Management View
-* *************************************** */
-exports.buildManagement = async function (req, res) {
+**************************************** */
+exports.getManagement = async function (req, res) {
   const nav = await utilities.getNav()
   const message = req.flash("notice")
   res.render("inventory/management", {
@@ -19,8 +21,8 @@ exports.buildManagement = async function (req, res) {
 
 /* ****************************************
 *  Deliver Add Classification View
-* *************************************** */
-exports.buildAddClassification = async function (req, res) {
+**************************************** */
+exports.addClassificationView = async function (req, res) {
   const nav = await utilities.getNav()
   const message = req.flash("notice")
 
@@ -35,20 +37,19 @@ exports.buildAddClassification = async function (req, res) {
 
 /* ****************************************
 *  Process Add Classification
-* *************************************** */
+**************************************** */
 exports.addClassification = async function (req, res) {
   const errors = validationResult(req)
   let { classification_name } = req.body
   const nav = await utilities.getNav()
 
-  // Validation failed
   if (!errors.isEmpty()) {
     return res.status(400).render("inventory/add-classification", {
       title: "Add New Classification",
       nav,
       errors: errors.array(),
       message: null,
-      classification_name, // sticky
+      classification_name,
     })
   }
 
@@ -57,12 +58,9 @@ exports.addClassification = async function (req, res) {
 
     if (result.rowCount > 0) {
       req.flash("notice", `The classification "${classification_name}" was successfully added.`)
-
-      // Rebuild nav so the new classification appears immediately
       return res.redirect("/inv/")
     }
 
-    // Insert failed
     return res.status(500).render("inventory/add-classification", {
       title: "Add New Classification",
       nav,
@@ -83,8 +81,8 @@ exports.addClassification = async function (req, res) {
 
 /* ****************************************
 *  Deliver Add Inventory View
-* *************************************** */
-exports.buildAddInventory = async function (req, res) {
+**************************************** */
+exports.addInventoryView = async function (req, res) {
   const nav = await utilities.getNav()
   const classificationList = await utilities.buildClassificationList()
   const message = req.flash("notice")
@@ -95,8 +93,6 @@ exports.buildAddInventory = async function (req, res) {
     classificationList,
     errors: null,
     message,
-
-    // Sticky defaults
     classification_id: "",
     inv_make: "",
     inv_model: "",
@@ -112,12 +108,11 @@ exports.buildAddInventory = async function (req, res) {
 
 /* ****************************************
 *  Process Add Vehicle
-* *************************************** */
-exports.addInventory = async function (req, res) {
+**************************************** */
+exports.addVehicle = async function (req, res) {
   const errors = validationResult(req)
   const nav = await utilities.getNav()
-
-  let {
+  const {
     classification_id,
     inv_make,
     inv_model,
@@ -130,10 +125,8 @@ exports.addInventory = async function (req, res) {
     inv_color,
   } = req.body
 
-  // Return classification dropdown with sticky selection
   const classificationList = await utilities.buildClassificationList(classification_id)
 
-  // Validation failed
   if (!errors.isEmpty()) {
     return res.status(400).render("inventory/add-inventory", {
       title: "Add New Vehicle",
@@ -141,8 +134,6 @@ exports.addInventory = async function (req, res) {
       classificationList,
       errors: errors.array(),
       message: null,
-
-      // Sticky form
       classification_id,
       inv_make,
       inv_model,
@@ -175,15 +166,12 @@ exports.addInventory = async function (req, res) {
       return res.redirect("/inv/")
     }
 
-    // Failed to insert
     return res.status(500).render("inventory/add-inventory", {
       title: "Add New Vehicle",
       nav,
       classificationList,
       errors: [{ msg: "Failed to add vehicle." }],
       message: null,
-
-      // Sticky
       classification_id,
       inv_make,
       inv_model,
@@ -202,8 +190,6 @@ exports.addInventory = async function (req, res) {
       classificationList,
       errors: [{ msg: error.message }],
       message: null,
-
-      // Sticky
       classification_id,
       inv_make,
       inv_model,
