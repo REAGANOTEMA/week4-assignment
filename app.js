@@ -27,7 +27,7 @@ app.use(express.json());
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Session middleware (consider switching to a DB store for production)
+// Session middleware (MemoryStore for development; can switch to MySQL store for production)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret-key",
@@ -54,10 +54,10 @@ let db;
 (async function initDB() {
   try {
     db = await mysql.createPool({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      host: process.env.DB_HOST || "localhost",
+      user: process.env.DB_USER || "root",
+      password: process.env.DB_PASSWORD || "",
+      database: process.env.DB_NAME || "week4_assignment",
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
