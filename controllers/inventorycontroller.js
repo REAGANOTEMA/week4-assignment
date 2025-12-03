@@ -1,47 +1,56 @@
-// controllers/inventorycontroller.js
 // Author: Reagan Otema
+// Inventory Controller for CSE 340 Week 4 Assignment
 
-const invModel = require("../models/inventorymodel") // match your lowercase filename
-const { validationResult } = require("express-validator")
-const utilities = require("../utils/index")
+const invModel = require("../models/inventorymodel"); // match lowercase filename
+const { validationResult } = require("express-validator");
+const utilities = require("../utils/index.js"); // ensure lowercase + .js
 
 /* ****************************************
-*  Deliver Inventory Management View
-**************************************** */
+ *  Deliver Inventory Management View
+ **************************************** */
 exports.getManagement = async function (req, res) {
-  const nav = await utilities.getNav()
-  const message = req.flash("notice")
-  res.render("inventory/management", {
-    title: "Inventory Management",
-    nav,
-    errors: null,
-    message,
-  })
-}
+  try {
+    const nav = await utilities.getNav();
+    const message = req.flash("notice");
+    res.render("inventory/management", {
+      title: "Inventory Management",
+      nav,
+      errors: null,
+      message,
+    });
+  } catch (error) {
+    console.error("Error loading management view:", error);
+    res.status(500).send("Server Error");
+  }
+};
 
 /* ****************************************
-*  Deliver Add Classification View
-**************************************** */
+ *  Deliver Add Classification View
+ **************************************** */
 exports.addClassificationView = async function (req, res) {
-  const nav = await utilities.getNav()
-  const message = req.flash("notice")
-
-  res.render("inventory/add-classification", {
-    title: "Add New Classification",
-    nav,
-    message,
-    errors: null,
-    classification_name: "",
-  })
-}
+  try {
+    const nav = await utilities.getNav();
+    const message = req.flash("notice");
+    res.render("inventory/add-classification", {
+      title: "Add New Classification",
+      nav,
+      message,
+      errors: null,
+      classification_name: "",
+    });
+  } catch (error) {
+    console.error("Error loading add-classification view:", error);
+    res.status(500).send("Server Error");
+  }
+};
 
 /* ****************************************
-*  Process Add Classification
-**************************************** */
+ *  Process Add Classification
+ **************************************** */
 exports.addClassification = async function (req, res) {
-  const errors = validationResult(req)
-  let { classification_name } = req.body
-  const nav = await utilities.getNav()
+  const errors = validationResult(req);
+  let { classification_name } = req.body;
+  const nav = await utilities.getNav();
 
   if (!errors.isEmpty()) {
     return res.status(400).render("inventory/add-classification", {
@@ -50,15 +59,17 @@ exports.addClassification = async function (req, res) {
       errors: errors.array(),
       message: null,
       classification_name,
-    })
+    });
   }
 
   try {
-    const result = await invModel.insertClassification(classification_name)
-
+    const result = await invModel.insertClassification(classification_name);
     if (result.rowCount > 0) {
-      req.flash("notice", `The classification "${classification_name}" was successfully added.`)
-      return res.redirect("/inv/")
+      req.flash(
+        "notice",
+        `The classification "${classification_name}" was successfully added.`
+      );
+      return res.redirect("/inv/");
     }
 
     return res.status(500).render("inventory/add-classification", {
@@ -67,7 +78,7 @@ exports.addClassification = async function (req, res) {
       errors: [{ msg: "Failed to add classification." }],
       message: null,
       classification_name,
-    })
+    });
   } catch (error) {
     return res.status(500).render("inventory/add-classification", {
       title: "Add New Classification",
@@ -75,43 +86,48 @@ exports.addClassification = async function (req, res) {
       errors: [{ msg: error.message }],
       message: null,
       classification_name,
-    })
+    });
   }
-}
+};
 
 /* ****************************************
-*  Deliver Add Inventory View
-**************************************** */
+ *  Deliver Add Inventory View
+ **************************************** */
 exports.addInventoryView = async function (req, res) {
-  const nav = await utilities.getNav()
-  const classificationList = await utilities.buildClassificationList()
-  const message = req.flash("notice")
+  try {
+    const nav = await utilities.getNav();
+    const classificationList = await utilities.buildClassificationList();
+    const message = req.flash("notice");
 
-  res.render("inventory/add-inventory", {
-    title: "Add New Vehicle",
-    nav,
-    classificationList,
-    errors: null,
-    message,
-    classification_id: "",
-    inv_make: "",
-    inv_model: "",
-    inv_year: "",
-    inv_description: "",
-    inv_image: "/images/vehicles/no-image.png",
-    inv_thumbnail: "/images/vehicles/no-image-tn.png",
-    inv_price: "",
-    inv_stock: "",
-    inv_color: "",
-  })
-}
+    res.render("inventory/add-inventory", {
+      title: "Add New Vehicle",
+      nav,
+      classificationList,
+      errors: null,
+      message,
+      classification_id: "",
+      inv_make: "",
+      inv_model: "",
+      inv_year: "",
+      inv_description: "",
+      inv_image: "/images/vehicles/no-image.png",
+      inv_thumbnail: "/images/vehicles/no-image-tn.png",
+      inv_price: "",
+      inv_stock: "",
+      inv_color: "",
+    });
+  } catch (error) {
+    console.error("Error loading add-inventory view:", error);
+    res.status(500).send("Server Error");
+  }
+};
 
 /* ****************************************
-*  Process Add Vehicle
-**************************************** */
+ *  Process Add Vehicle
+ **************************************** */
 exports.addVehicle = async function (req, res) {
-  const errors = validationResult(req)
-  const nav = await utilities.getNav()
+  const errors = validationResult(req);
+  const nav = await utilities.getNav();
   const {
     classification_id,
     inv_make,
@@ -123,9 +139,9 @@ exports.addVehicle = async function (req, res) {
     inv_price,
     inv_stock,
     inv_color,
-  } = req.body
+  } = req.body;
 
-  const classificationList = await utilities.buildClassificationList(classification_id)
+  const classificationList = await utilities.buildClassificationList(classification_id);
 
   if (!errors.isEmpty()) {
     return res.status(400).render("inventory/add-inventory", {
@@ -144,7 +160,7 @@ exports.addVehicle = async function (req, res) {
       inv_price,
       inv_stock,
       inv_color,
-    })
+    });
   }
 
   try {
@@ -159,11 +175,14 @@ exports.addVehicle = async function (req, res) {
       inv_price,
       inv_stock,
       inv_color,
-    })
+    });
 
     if (result.rowCount > 0) {
-      req.flash("notice", `The vehicle "${inv_make} ${inv_model}" was successfully added.`)
-      return res.redirect("/inv/")
+      req.flash(
+        "notice",
+        `The vehicle "${inv_make} ${inv_model}" was successfully added.`
+      );
+      return res.redirect("/inv/");
     }
 
     return res.status(500).render("inventory/add-inventory", {
@@ -182,7 +201,7 @@ exports.addVehicle = async function (req, res) {
       inv_price,
       inv_stock,
       inv_color,
-    })
+    });
   } catch (error) {
     return res.status(500).render("inventory/add-inventory", {
       title: "Add New Vehicle",
@@ -200,6 +219,6 @@ exports.addVehicle = async function (req, res) {
       inv_price,
       inv_stock,
       inv_color,
-    })
+    });
   }
-}
+};
