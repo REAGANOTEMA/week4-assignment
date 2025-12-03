@@ -11,12 +11,15 @@ const utilities = require("../utils/index.js"); // ensure lowercase + .js
 exports.buildManagement = async function (req, res) {
   try {
     const nav = await utilities.getNav();
+    const inventoryData = await invModel.getInventory(req.db); // fetch all inventory items
     const message = req.flash("notice");
+
     res.render("inventory/management", {
       title: "Inventory Management",
       nav,
-      errors: null,
+      inventoryData,
       message,
+      errors: null,
     });
   } catch (error) {
     console.error("Error loading management view:", error);
@@ -31,6 +34,7 @@ exports.addClassificationView = async function (req, res) {
   try {
     const nav = await utilities.getNav();
     const message = req.flash("notice");
+
     res.render("inventory/add-classification", {
       title: "Add New Classification",
       nav,
@@ -49,7 +53,7 @@ exports.addClassificationView = async function (req, res) {
  **************************************** */
 exports.addClassification = async function (req, res) {
   const errors = validationResult(req);
-  let { classification_name } = req.body;
+  const { classification_name } = req.body;
   const nav = await utilities.getNav();
 
   if (!errors.isEmpty()) {
@@ -63,7 +67,8 @@ exports.addClassification = async function (req, res) {
   }
 
   try {
-    const result = await invModel.insertClassification(classification_name);
+    const result = await invModel.insertClassification(req.db, classification_name);
+
     if (result.rowCount > 0) {
       req.flash(
         "notice",
@@ -164,7 +169,7 @@ exports.addInventory = async function (req, res) {
   }
 
   try {
-    const result = await invModel.insertVehicle({
+    const result = await invModel.insertVehicle(req.db, {
       classification_id,
       inv_make,
       inv_model,
