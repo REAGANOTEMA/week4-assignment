@@ -6,9 +6,9 @@ const { validationResult } = require("express-validator");
 const utilities = require("../utils/index.js"); // ensure lowercase + .js
 
 /* ****************************************
- *  Deliver Inventory Management View
+ * Deliver Inventory Management View
  **************************************** */
-exports.getManagement = async function (req, res) {
+exports.buildManagement = async function (req, res) {
   try {
     const nav = await utilities.getNav();
     const message = req.flash("notice");
@@ -25,7 +25,7 @@ exports.getManagement = async function (req, res) {
 };
 
 /* ****************************************
- *  Deliver Add Classification View
+ * Deliver Add Classification View
  **************************************** */
 exports.addClassificationView = async function (req, res) {
   try {
@@ -45,7 +45,7 @@ exports.addClassificationView = async function (req, res) {
 };
 
 /* ****************************************
- *  Process Add Classification
+ * Process Add Classification
  **************************************** */
 exports.addClassification = async function (req, res) {
   const errors = validationResult(req);
@@ -91,7 +91,7 @@ exports.addClassification = async function (req, res) {
 };
 
 /* ****************************************
- *  Deliver Add Inventory View
+ * Deliver Add Inventory View
  **************************************** */
 exports.addInventoryView = async function (req, res) {
   try {
@@ -123,9 +123,9 @@ exports.addInventoryView = async function (req, res) {
 };
 
 /* ****************************************
- *  Process Add Vehicle
+ * Process Add Inventory
  **************************************** */
-exports.addVehicle = async function (req, res) {
+exports.addInventory = async function (req, res) {
   const errors = validationResult(req);
   const nav = await utilities.getNav();
   const {
