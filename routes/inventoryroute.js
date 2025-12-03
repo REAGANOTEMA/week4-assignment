@@ -4,7 +4,7 @@
 const express = require("express");
 const router = express.Router();
 
-// Make sure your file names are all lowercase!
+// Use lowercase to match the actual filename on disk!
 const inventoryController = require("../controllers/inventorycontroller"); // inventorycontroller.js
 const { classificationValidator, vehicleValidator } = require("../middleware/validation");
 const utilities = require("../utils/index");
@@ -71,10 +71,12 @@ router.post(
 );
 
 /* ****************************************
- * Final safety check for undefined functions
+ * Safety checks: Ensure controller functions exist
  **************************************** */
-if (!inventoryController.buildManagement) throw new Error("buildManagement function is missing in inventoryController!");
-if (!inventoryController.addClassification) throw new Error("addClassification function is missing in inventoryController!");
-if (!inventoryController.addInventory) throw new Error("addInventory function is missing in inventoryController!");
+["buildManagement", "addClassification", "addInventory"].forEach(fn => {
+  if (typeof inventoryController[fn] !== "function") {
+    throw new Error(`inventoryController.${fn} is missing or not a function!`);
+  }
+});
 
 module.exports = router;
