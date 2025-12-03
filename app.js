@@ -32,7 +32,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-const inventoryRoutes = require('./routes/inventoryRoutes');
+const inventoryRoutes = require('./routes/inventoryRoute'); // ✅ FIXED
 app.use('/inv', inventoryRoutes);
 
 // Root route
