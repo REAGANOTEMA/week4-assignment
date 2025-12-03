@@ -4,9 +4,9 @@
 const invModel = require("../models/inventorymodel");
 
 /**
- * Build a dynamic classification dropdown list
+ * Build a dynamic classification dropdown list for forms
  * @param {number|null} classification_id - Selected classification for sticky form
- * @returns {string} HTML select element with classifications
+ * @returns {string} HTML <select> element with classifications
  */
 exports.buildClassificationList = async function (classification_id = null) {
   try {
@@ -16,7 +16,7 @@ exports.buildClassificationList = async function (classification_id = null) {
 
     data.forEach((row) => {
       classificationList += `<option value='${row.classification_id}'`;
-      if (classification_id != null && row.classification_id == classification_id) {
+      if (classification_id !== null && row.classification_id == classification_id) {
         classificationList += " selected";
       }
       classificationList += `>${row.classification_name}</option>`;
@@ -31,8 +31,8 @@ exports.buildClassificationList = async function (classification_id = null) {
 };
 
 /**
- * Build the navigation menu
- * @returns {string} HTML navigation
+ * Build the main navigation menu
+ * @returns {string} HTML <ul> navigation
  */
 exports.getNav = async function () {
   return `
