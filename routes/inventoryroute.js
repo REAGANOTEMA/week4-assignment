@@ -3,14 +3,17 @@
 
 const express = require("express");
 const router = express.Router();
-const inventoryController = require("../controllers/inventoryController");
+
+// MUST MATCH LOWERCASE FILE NAME EXACTLY (Render is case-sensitive!)
+const inventoryController = require("../controllers/inventorycontroller");
+
 const { classificationValidator, vehicleValidator } = require("../middleware/validation");
 const utilities = require("../utils/index");
 
 /* ****************************************
  * Management View
  **************************************** */
-router.get("/", inventoryController.getManagement);
+router.get("/", inventoryController.buildManagement);
 
 /* ****************************************
  * Add Classification Form
@@ -65,7 +68,7 @@ router.get("/add-inventory", async (req, res) => {
 router.post(
   "/add-inventory",
   vehicleValidator,
-  inventoryController.addVehicle // MUST match your controller function exactly
+  inventoryController.addInventory // MUST match your controller function EXACTLY
 );
 
 module.exports = router;
