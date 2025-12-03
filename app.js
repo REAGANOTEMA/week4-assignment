@@ -1,6 +1,6 @@
 /*
   Author: Reagan Otema
-  Final working server for CSE 340 Week 4 assignment
+  Production-ready server for CSE 340 Week 4 assignment
 */
 
 const express = require("express");
@@ -20,12 +20,14 @@ app.use(helmet());
 // HTTP request logging
 app.use(morgan("dev"));
 
-// Middleware
+// Middleware for parsing body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// Session middleware
+// Session middleware (consider switching to a DB store for production)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secret-key",
@@ -52,10 +54,10 @@ let db;
 (async function initDB() {
   try {
     db = await mysql.createPool({
-      host: process.env.DB_HOST || "localhost",
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-      database: process.env.DB_NAME || "week4_assignment",
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
@@ -81,9 +83,9 @@ app.set("views", path.join(__dirname, "views"));
 const inventoryRoutes = require("./routes/inventoryroute"); // lowercase
 app.use("/inv", inventoryRoutes);
 
-// Home route
+// Redirect root "/" to inventory management page
 app.get("/", (req, res) => {
-  res.send("Reagan Otema — CSE 340 Assignment Server Running");
+  res.redirect("/inv/");
 });
 
 // 404 handler
