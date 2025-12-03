@@ -1,106 +1,103 @@
 /*
   Author: Reagan Otema
-  Production-ready server for CSE 340 Week 4 assignment
+  Correct production-ready app.js for CSE 340 Week 4
+  Works with Render + PostgreSQL + MVC structure
 */
 
-const express = require("express");
-const path = require("path");
-const session = require("express-session");
-const flash = require("connect-flash"); // Flash messages
-const helmet = require("helmet"); // Security headers
-const morgan = require("morgan"); // HTTP logging
-const mysql = require("mysql2/promise"); // MySQL database
-require("dotenv").config();
+const express = require("express")
+const path = require("path")
+const session = require("express-session")
+const flash = require("connect-flash")
+const helmet = require("helmet")
+const morgan = require("morgan")
+require("dotenv").config()
 
-const app = express();
+const pool = require("./db")          // PostgreSQL connection pool
+const utilities = require("./utilities") // For nav builder + helpers
 
-// Security headers
-app.use(helmet());
+const app = express()
 
-// HTTP request logging
-app.use(morgan("dev"));
+/* ============================
+        GLOBAL MIDDLEWARE
+=============================== */
+app.use(helmet())          // Security headers
+app.use(morgan("dev"))     // Logging
 
-// Middleware for parsing body
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
 
-// Serve static files
-app.use(express.static(path.join(__dirname, "public")));
+// Public folder
+app.use(express.static(path.join(__dirname, "public")))
 
-// Session middleware (MemoryStore for development; can switch to MySQL store for production)
+// Sessions
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "secret-key",
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // true in production
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: process.env.NODE_ENV === "production",
     },
   })
-);
+)
 
 // Flash messages
-app.use(flash());
+app.use(flash())
 
-// Make flash messages available in all views
-app.use((req, res, next) => {
-  res.locals.message = req.flash("notice");
-  next();
-});
+/* Make nav + flash available in all EJS views */
+app.use(async (req, res, next) => {
+  res.locals.message = req.flash("notice")
+  res.locals.nav = await utilities.getNav()
+  next()
+})
 
-// Database connection
-let db;
-(async function initDB() {
-  try {
-    db = await mysql.createPool({
-      host: process.env.DB_HOST || "localhost",
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-      database: process.env.DB_NAME || "week4_assignment",
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-    });
-    console.log("Database connected successfully");
-  } catch (error) {
-    console.error("Database connection failed:", error);
-    process.exit(1); // Stop server if DB fails
-  }
-})();
+/* ============================
+           VIEW ENGINE
+=============================== */
 
-// Make DB accessible in all requests
-app.use((req, res, next) => {
-  req.db = db;
-  next();
-});
+app.set("view engine", "ejs")
+app.set("views", path.join(__dirname, "views"))
 
-// Views
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+/* ============================
+              ROUTES
+=============================== */
+const baseRoute = require("./routes/baseRoute")
+const invRoute = require("./routes/inventoryRoute")  // Correct file name
 
-// Routes
-const inventoryRoutes = require("./routes/inventoryroute"); // lowercase
-app.use("/inv", inventoryRoutes);
+app.use("/", baseRoute)
+app.use("/inv", invRoute)
 
-// Redirect root "/" to inventory management page
-app.get("/", (req, res) => {
-  res.redirect("/inv/");
-});
+/* ============================
+            404 PAGE
+=============================== */
+app.use(async (req, res) => {
+  const nav = await utilities.getNav()
+  res.status(404).render("errors/404", {
+    title: "404 Not Found",
+    nav,
+    message: "The page you requested could not be found.",
+  })
+})
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).render("404", { title: "404 - Not Found" });
-});
+/* ============================
+        GLOBAL ERROR HANDLER
+=============================== */
+app.use(async (err, req, res, next) => {
+  console.error("SERVER ERROR:", err)
+  const nav = await utilities.getNav()
+  res.status(500).render("errors/500", {
+    title: "Server Error",
+    message: err.message,
+    nav,
+  })
+})
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render("500", { title: "500 - Server Error", error: err });
-});
+/* ============================
+            START SERVER
+=============================== */
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-module.exports = app;
+module.exports = app
