@@ -31,12 +31,21 @@ app.use(
     secret: process.env.SESSION_SECRET || "secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // set true if using HTTPS
+    cookie: { 
+      secure: process.env.NODE_ENV === "production", // secure cookies in production
+      maxAge: 1000 * 60 * 60 * 24 // 1 day
+    },
   })
 );
 
 // Flash messages
 app.use(flash());
+
+// Make flash messages available in all views
+app.use((req, res, next) => {
+  res.locals.message = req.flash("notice");
+  next();
+});
 
 // Database connection
 let db;
@@ -69,7 +78,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // Routes
-const inventoryRoutes = require("./routes/inventoryroute"); // lowercase to match file
+const inventoryRoutes = require("./routes/inventoryroute"); // match lowercase file
 app.use("/inv", inventoryRoutes);
 
 // Home route
@@ -79,13 +88,13 @@ app.get("/", (req, res) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).send("404 Not Found");
+  res.status(404).render("404", { title: "404 - Not Found" });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send("Something went wrong!");
+  res.status(500).render("500", { title: "500 - Server Error", error: err });
 });
 
 // Start server

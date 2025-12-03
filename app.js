@@ -1,94 +1,100 @@
-// Author: Reagan Otema
 /*
+  Author: Reagan Otema
   Final working server for CSE 340 Week 4 assignment
 */
 
-const express = require('express');
-const path = require('path');
-const session = require('express-session');
-const flash = require('connect-flash'); // Added for flash messages
-const helmet = require('helmet'); // optional security
-const morgan = require('morgan'); // optional logging
-require('dotenv').config();
+const express = require("express");
+const path = require("path");
+const session = require("express-session");
+const flash = require("connect-flash"); // Flash messages
+const helmet = require("helmet"); // Security headers
+const morgan = require("morgan"); // HTTP logging
+const mysql = require("mysql2/promise"); // MySQL database
+require("dotenv").config();
 
 const app = express();
 
-// Optional: security headers
+// Security headers
 app.use(helmet());
 
-// Optional: logging
-app.use(morgan('dev'));
+// HTTP request logging
+app.use(morgan("dev"));
 
 // Middleware
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-// Session middleware for flash messages
+// Session middleware
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'secret-key',
+    secret: process.env.SESSION_SECRET || "secret-key",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // set to true if using HTTPS
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // true in production
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
 
-// Initialize flash messages
+// Flash messages
 app.use(flash());
 
-// Database connection (example for MySQL2)
-const mysql = require('mysql2/promise');
-let db;
+// Make flash messages available in all views
+app.use((req, res, next) => {
+  res.locals.message = req.flash("notice");
+  next();
+});
 
+// Database connection
+let db;
 (async function initDB() {
   try {
     db = await mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'week4_assignment',
+      host: process.env.DB_HOST || "localhost",
+      user: process.env.DB_USER || "root",
+      password: process.env.DB_PASSWORD || "",
+      database: process.env.DB_NAME || "week4_assignment",
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
     });
-    console.log('Database connected successfully');
+    console.log("Database connected successfully");
   } catch (error) {
-    console.error('Database connection failed:', error);
-    process.exit(1); // stop app if DB fails
+    console.error("Database connection failed:", error);
+    process.exit(1); // Stop server if DB fails
   }
 })();
 
-// Make db accessible in req
+// Make DB accessible in all requests
 app.use((req, res, next) => {
   req.db = db;
   next();
 });
 
 // Views
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 // Routes
-const inventoryRoutes = require('./routes/inventoryroute'); // lowercase
-app.use('/inv', inventoryRoutes);
+const inventoryRoutes = require("./routes/inventoryroute"); // lowercase
+app.use("/inv", inventoryRoutes);
 
-// Root route
-app.get('/', (req, res) => {
-  res.send('Reagan Otema — CSE 340 Assignment Server Running');
+// Home route
+app.get("/", (req, res) => {
+  res.send("Reagan Otema — CSE 340 Assignment Server Running");
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).send('404 Not Found');
+  res.status(404).render("404", { title: "404 - Not Found" });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).render("500", { title: "500 - Server Error", error: err });
 });
 
 // Start server
