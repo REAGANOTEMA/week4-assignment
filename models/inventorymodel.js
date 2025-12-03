@@ -1,7 +1,7 @@
 // Author: Reagan Otema
 // Model functions for inventory and classification
 
-const pool = require("../db/index")
+const pool = require("../db/index");
 
 /**
  * Insert a new classification
@@ -14,14 +14,14 @@ exports.insertClassification = async (classification_name) => {
       INSERT INTO classification (classification_name)
       VALUES ($1)
       RETURNING classification_id
-    `
-    const result = await pool.query(sql, [classification_name])
-    return result
+    `;
+    const result = await pool.query(sql, [classification_name]);
+    return result;
   } catch (error) {
-    console.error("Error in insertClassification:", error)
-    throw error
+    console.error("Error in insertClassification:", error);
+    throw error;
   }
-}
+};
 
 /**
  * Insert a new vehicle into inventory
@@ -32,6 +32,7 @@ exports.insertVehicle = async ({
   classification_id,
   inv_make,
   inv_model,
+  inv_year,
   inv_description,
   inv_image,
   inv_thumbnail,
@@ -42,28 +43,29 @@ exports.insertVehicle = async ({
   try {
     const sql = `
       INSERT INTO inventory
-      (classification_id, inv_make, inv_model, inv_description, inv_image, inv_thumbnail, inv_price, inv_stock, inv_color)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      (classification_id, inv_make, inv_model, inv_year, inv_description, inv_image, inv_thumbnail, inv_price, inv_stock, inv_color)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING inv_id
-    `
+    `;
     const values = [
       classification_id,
       inv_make,
       inv_model,
+      inv_year,
       inv_description,
       inv_image,
       inv_thumbnail,
       inv_price,
       inv_stock,
       inv_color,
-    ]
-    const result = await pool.query(sql, values)
-    return result
+    ];
+    const result = await pool.query(sql, values);
+    return result;
   } catch (error) {
-    console.error("Error in insertVehicle:", error)
-    throw error
+    console.error("Error in insertVehicle:", error);
+    throw error;
   }
-}
+};
 
 /**
  * Get all classifications for dropdown
@@ -75,11 +77,31 @@ exports.getClassifications = async () => {
       SELECT classification_id, classification_name
       FROM classification
       ORDER BY classification_name
-    `
-    const result = await pool.query(sql)
-    return result.rows
+    `;
+    const result = await pool.query(sql);
+    return result.rows;
   } catch (error) {
-    console.error("Error in getClassifications:", error)
-    throw error
+    console.error("Error in getClassifications:", error);
+    throw error;
   }
-}
+};
+
+/**
+ * Get all inventory items joined with classification
+ * @returns Array of inventory objects
+ */
+exports.getInventory = async () => {
+  try {
+    const sql = `
+      SELECT i.*, c.classification_name
+      FROM inventory i
+      JOIN classification c ON i.classification_id = c.classification_id
+      ORDER BY i.inv_make, i.inv_model
+    `;
+    const result = await pool.query(sql);
+    return result.rows;
+  } catch (error) {
+    console.error("Error in getInventory:", error);
+    throw error;
+  }
+};
